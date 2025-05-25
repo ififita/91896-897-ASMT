@@ -51,13 +51,33 @@ def add_student(students):
                 break
             except ValueError:
                 msgbox("Please enter a valid number for the test score.")
-
         subjects[subject] = score #storing the subject and score in the dictionary
     students[name] = subjects #saving the students subjects and scores in the main students dictionary
     msgbox(f"{name} has been added successfully.\n")#adding a new line for better formatting
+    
+def print_summary():
+    for name, subjects in students.items():
+        scores = list(subjects.values())
 
-#calling functions to run them
-add_student(students)
+def main():
+    while True:
+        choice = buttonbox("Welcome to the Student Gradebook Manager! Please choose an option to get started.",
+                           choices = ["Add a Student","Display a Summary Report","Search for a Student","Edit Student Info","Exit"])
+        if choice == "Add a Student":
+            add_student()
+        elif choice == "Display a Summary Report":
+            print_summary()
+        elif choice == "Search for a Student":
+            search_student()
+        elif choice == "Edit Student Info":
+            edit_info()
+        else:
+            msgbox("The Gradebook Manager is exiting. Goodbye!")
+            break
+main()
+            
+        
+        
 
 
     
