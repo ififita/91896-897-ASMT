@@ -54,6 +54,10 @@ def add_student():
         subjects[subject] = score #storing the subject and score in the dictionary
     students[name] = subjects #saving the students subjects and scores in the main students dictionary
     msgbox(f"{name} has been added successfully.\n")#adding a new line for better formatting
+
+def calc_avg(scores):
+    if not scores:
+        return 0
     
 def print_summary():
     if not students: #using if not operator to check for empty dictionary
@@ -67,6 +71,27 @@ def print_summary():
         report = (f"{name}'s scores: {subject_scores} | Average Score: {average}")
         msgbox(report, "Summary Report")
 
+def search_student():
+    name = enterbox("Enter a student name to search: ")
+    if name in students:
+        subjects = students[name]
+        scores = list(subjects.values())
+        avg = calc_avg(scores)
+        subject_scores = ','.join(f"{sub}:{score}" for sub, score in subjects.items())
+        msgbox(f"{name}'s scores: {subject_scores}")
+    else:
+        msgbox("Student not found.")
+
+def edit_info():
+    name = enterbox("Enter the name of the student to edit their info: ")
+    options = buttonbox(f"What do you want to edit for {name}?",
+              options = ["Edit name", "Edit a subject score", "Cancel"])
+    if option == "Edit name":
+        edited_name = enterbox("Enter the edited name: ")
+    elif option == "Edit a subject score":
+        subjects = students[name]
+        
+        
 
 def main():
     while True:
