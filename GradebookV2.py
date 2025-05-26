@@ -2,7 +2,7 @@
 from easygui import*
 #dictionary to store all the student data
 students = {}
-def add_student(students):
+def add_student():
     #asking for user details
     while True:
         name = enterbox("Enter the student's name: ")
@@ -56,13 +56,24 @@ def add_student(students):
     msgbox(f"{name} has been added successfully.\n")#adding a new line for better formatting
     
 def print_summary():
+    if not students: #using if not operator to check for empty dictionary
+        msgbox("Sorry, no student data has been entered.")
+        return
     for name, subjects in students.items():
         scores = list(subjects.values())
+        avg = calc_avg(scores)
+        #concatenating subjects and scores 
+        subject_scores = ','.join(f"{sub}:{score}" for sub, score in subjects.items())
+        report = (f"{name}'s scores: {subject_scores} | Average Score: {average}")
+        msgbox(report, "Summary Report")
+
 
 def main():
     while True:
+        #creating the main page with the options
         choice = buttonbox("Welcome to the Student Gradebook Manager! Please choose an option to get started.",
                            choices = ["Add a Student","Display a Summary Report","Search for a Student","Edit Student Info","Exit"])
+        #calling each function when an option is choice
         if choice == "Add a Student":
             add_student()
         elif choice == "Display a Summary Report":
