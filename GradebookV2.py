@@ -5,7 +5,7 @@ students = {}
 def add_student():
     #asking for user details
     while True:
-        name = enterbox("Enter the student's name: ")
+        name = enterbox("Enter the student's full name: ")
         if name is None:
             return #returning to the main menu
         name = name.strip()
@@ -52,7 +52,15 @@ def add_student():
                 return
             try:
                 score = float(score) #converting the score to float
-                break
+                if not score.is_integer():
+                    msgbox("Please enter an integer (ie: a number which does not have a decimal part).")
+                elif score <0:
+                    msgbox("Please enter an integer that is more than (or equal to) 0.")
+                elif score >100:
+                    msgbox("Please enter an integer that is less than (or equal to) 100.")
+                else:
+                    score = int(score)
+                    break
             except ValueError:
                 msgbox("Please enter a valid number for the test score.")
         subjects[subject] = score #storing the subject and score in the dictionary
@@ -76,9 +84,11 @@ def print_summary():
         avg = calc_avg(scores)
         #concatenating subjects and scores 
         subject_scores = ','.join(f"{sub}:{score}" for sub, score in subjects.items())
-        report = (f"{name}'s scores: {subject_scores} | Average Score: {avg:.2f}\n")
-        msgbox(report, "Summary Report")
-
+        report += (f"{name}'s scores: {subject_scores} | Average Score: {avg:.2f}\n\n")
+        report += "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+\n\n"
+    msgbox(report,"Student Gradebook Summary")
+    
+    
 def search_student():
     #asking for a student's name to search in the dictionary
     name = enterbox("Enter a student name to search: ")
@@ -89,7 +99,7 @@ def search_student():
         avg = calc_avg(scores)
         #creating a string to show each subject and its score
         subject_scores = ','.join(f"{sub}:{score}" for sub, score in subjects.items())
-        msgbox(f"{name}'s scores: {subject_scores}")
+        msgbox(f"{name}'s scores: {subject_scores} | Average Score: {avg:.2f}")
     else:
         msgbox("Student not found.")
 #creating a function to allow user to edit information
@@ -126,7 +136,10 @@ def edit_info():
             msgbox("Sorry, no subjects have been entered for this student.")
             return
         subject_names = list(subjects.keys()) #showing the list of subject names
-        edited_sub = choicebox("Which subject would you like to edit?", choices=subject_names)
+        if len(subject_names) == 1:
+            edited_sub = subject_names[0]
+        else:
+            edited_sub = choicebox("Which subject would you like to edit?", choices=subject_names)
         if edited_sub is None:
             return
         new_score = enterbox(f"Enter the edited score for {edited_sub}: ")
@@ -138,6 +151,7 @@ def edit_info():
             subjects[edited_sub] = new_score #saving the updated score
         except ValueError:
             msgbox("Invalid score entered.")
+        msgbox("Score changed successfully.")
 def main():
     while True:
         #creating the main page with the options
@@ -153,9 +167,9 @@ def main():
         elif choice == "Edit Student Info":
             edit_info()
         else:
-            ("The Gradebook Manager is exiting. Goodbye!")
+            msgbox("The Gradebook Manager is exiting. Goodbye!")
             quit()
-            break
+#calling the main function to display the menu
 main()
             
         
