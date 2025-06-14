@@ -3,6 +3,7 @@ the functions and modules are called here.'''
 from easygui import *
 #importing the other files
 import V3students
+V3students.load_students()
 import V3reports
 
 def main():
@@ -28,6 +29,7 @@ def main():
         elif choice == "Delete a Student":
             V3students.delete_student()
         elif choice == "Exit":
+            V3students.save_students()
             msgbox("Exiting the Gradebook Manager. Goodbye!")
             break
 if __name__ == "__main__":

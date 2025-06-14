@@ -12,8 +12,10 @@ def print_summary():
     report += f"Date: {today}\n"
     report += "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+\n" 
     
-    for name, subjects in students.items():
-        report += f"{name}'s scores:\n"
+    for name, data in students.items():
+        student_class = data.get("class","Unknown")
+        report += f"{name} (Tutor Class: {student_class})\n"
+        subjects = data.get("subjects",{})
         for sub, score in subjects.items():
             report += f" {sub}: {score}\n"
         avg = calc_avg(list(subjects.values()))
@@ -22,7 +24,4 @@ def print_summary():
         report += "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+\n"
     
     msgbox(report, "Gradebook Summary")
-    #appending to the external file
-    with open("student_grades.txt", "a") as student_grades_file:
-        student_grades_file.write(report)
-       
+    
