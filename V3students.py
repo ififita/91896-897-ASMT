@@ -1,17 +1,25 @@
 '''this is a module for version 3 that will be imported from the main module.
 This module contains the code for all the options'''
 from easygui import *
-#dictionary to store all the student data
+#Dictionary to store all the student data
 students = {}
+
+#Defining constants
 FILENAME = "student_grades.txt"
+MAX_SUBJECTS = 10
+MIN_SCORE = 0
+MAX_SCORE = 100
+
 def add_student():
-    #asking for the user details
+    #Asking the user to enter student details and scores
     while True:
         field_names = ["Full name:", "Tutor Class (e.g., 12B1)"]
         entry = multenterbox("Enter student details:", "Student Info", field_names)
-        if entry is None:
+        if entry is None: #If the user cancels input then exit the function early
             return
+        #Getting the name and class and cleaning off any extra spaces
         name, student_class = entry[0].strip(), entry[1].strip()
+        #Validating student name
         if name == "":
             msgbox("Please type something (this can’t be left blank)")
             continue
@@ -19,8 +27,10 @@ def add_student():
             msgbox("Please try again - numbers are not allowed in this field.")
             continue
         elif name in students:
+            #Preventing duplicate student names
             msgbox("That student has already been entered. Please enter another student.")
             continue
+        #Validating tutor class
         if student_class == "":
             msgbox("Tutor class can't be left blank.")
             continue
@@ -32,31 +42,34 @@ def add_student():
             continue
         break
     while True:
+        #Ask how many subjects they want to enter
         subject_num = enterbox("How many subjects are you entering scores for?")
         if subject_num is None:
             return
         try:
             subject_num = int(subject_num)
+            #Validating the number of subjects within the valid range
             if subject_num < 1:
                 msgbox("Please enter an integer that is more than (or equal to) 1.")
                 continue
-            elif subject_num > 10:
+            elif subject_num > MAX_SUBJECTS:
                 msgbox("Please enter an integer that is less than (or equal to) 10.")
                 continue
-            break  # valid subject number
+            break  
         except ValueError:
             msgbox("Please enter an integer (ie: a number which does not have a decimal part).")
 
-
-    subjects = {} #storing the subjects in a dictionary
+    #Dictionary to hold subject names and scores for this student
+    subjects = {} 
+    #Loop to get subject name and score for each subject
     for i in range(subject_num):
-        #asking for the entries in a multenterbox
         while True:
             field_names = ["Subject name:", "Score (0-100):"]
             entry = multenterbox(f"Enter subject {i+1} info for {name}:","Subject Entry", field_names)
             if entry is None:
                 return
-            subject, score = entry[0].strip(), entry[1].strip()
+            subject, score = entry[0].strip().title(), entry[1].strip()
+            #Validating subject name
             if subject == "":
                 msgbox("Subject name can't be blank.")
                 continue
@@ -66,15 +79,17 @@ def add_student():
             elif subject in subjects:
                 msgbox("You've already entered that subject. Please enter a different subject.")
                 continue
+            #Validating score input as integer and in the valid range
             try:
                 score = int(score)
-                if score < 0 or score > 100:
+                if score < MIN_SCORE or score > MAX_SCORE:
                     msgbox("Score must be between 0 and 100.")
                 else:
                     subjects[subject] = score
                     break
             except ValueError:
                 msgbox("Please enter a valid whole number.") 
+    #Saving the new student and their subjects into the dictionary
     students[name] = {
             "class": student_class,
             "subjects": subjects
@@ -85,20 +100,21 @@ def search_student():
     while True:
         #asking for a student's name to search in the dictionary
         name = enterbox("Enter the student's name to search: ")
-        if name is None:
+        if name is None: 
             return
-        name = name.strip()
+        name = name.strip() #Remove extra spaces
         if name == "":
             msgbox("Please type something (this can’t be left blank)")
             continue
         elif any(char.isdigit() for char in name):
             msgbox("Student names can't contain numbers.")
-            continue
-        break
+            continue #Ask again if the name has numbers
+        break #Exiting the loop if the input is valid
+    #Checking if the student exists in the data
     if name in students:
-        student_data = students[name]
-        student_class = student_data["class"]
-        subjects = student_data["subjects"]
+        student_data = students[name] #Getting student details
+        student_class = student_data["class"] #Getting all subjects and scores
+        subjects = student_data["subjects"] #Getting the scores list
         scores = list(subjects.values())
         if not scores:
             msgbox(f"{name} (Tutor Class: {student_class}) has no subject scores.")
@@ -111,17 +127,19 @@ def search_student():
 #creating a function to allow user to edit information
 def edit_info():
     while True:
+        #Asking for the student's name to edit
         name = enterbox("Enter the student’s name to edit:")
         if name is None:
             return
         name = name.strip()
         if name == "":
             msgbox("Name can't be left blank.")
-            continue
+            continue #Ask again if empty
         elif any(char.isdigit() for char in name):
             msgbox("Names can't contain numbers.")
             continue
         break
+    #Checking if the student exists
     if name not in students:
         msgbox("Student not found.")
         return
@@ -129,11 +147,12 @@ def edit_info():
     option = buttonbox(f"What would you like to edit for {name}?", choices=["Edit name", "Edit subject score", "Add new subject", "Cancel"])
     if option == "Edit name":
         while True:
+            #Asking for new name
             edited_name = enterbox("Enter the new name:")
             if edited_name is None:
                 return
             edited_name = edited_name.strip()
-
+            #Validating new name
             if edited_name == "":
                 msgbox("This can't be blank.")
             elif edited_name == name:
@@ -143,14 +162,16 @@ def edit_info():
             elif edited_name in students:
                 msgbox("That name already exists.")
             else:
+                #Confirming name change
                 confirm = ynbox(f"Are you sure you want to change '{name}' to '{edited_name}'?")
                 if confirm:
+                    #Renaming the student in the dictionary
                     students[edited_name] = students.pop(name)
                     msgbox(f"Name changed to {edited_name}.")
                     save_students()
                 else:
                     msgbox("Name change cancelled.")
-                break
+                break #Exiting the loop 
 
     elif option == "Edit subject score":
         #getting the list of subjects for the student
@@ -172,8 +193,8 @@ def edit_info():
         #try to convert it to a number
         try:
             score = int(new_score)
-            if not (0 <= score <= 100):
-                msgbox("Score must be between 0 and 100.")
+            if not (MIN_SCORE <= score <= MAX_SCORE):
+                msgbox(f"Score must be between {MIN_SCORE} and {MAX_SCORE}.")
             else:
                 subjects[chosen_subject] = score
                 msgbox(f"Score for '{chosen_subject}' updated to {score}.")
@@ -184,21 +205,23 @@ def edit_info():
             
     elif option == "Add new subject":
         subjects = students[name]["subjects"]
-        if len(subjects) >= 10:
-            msgbox("Sorry, you can't add more than 10 subjects.")
+        if len(subjects) >= MAX_SUBJECTS: #Limit the max subjects to 10
+            msgbox(f"Sorry, you can't add more than {MAX_SUBJECTS} subjects.")
             return
         while True:
             field_names = ["Subject name:","Score (0-100):"]
             entry = multenterbox(f"Enter the new subject info for {name}:","Add Subject",field_names)
             if entry is None:
                 return
-            subject, score = entry[0].strip(), entry[1].strip()
+            subject, score = entry[0].strip().title(), entry[1].strip()
+            #Validating subject name
             if subject == "":
                 msgbox("Subject name can't be blank.")
                 continue
             elif subject.isdigit():
                 msgbox("Subject names can't be numbers.")
                 continue
+            #If the subject already exists then ask if user wants to update score
             if subject in subjects:
                 update = ynbox(f"'{subject}' has been added already. Would you like to update the score instead?")
                 if update:
@@ -207,8 +230,8 @@ def edit_info():
                         return
                     try:
                         new_score = int(new_score)
-                        if new_score < 0 or new_score > 100:
-                            msgbox("Score must be between 0 and 100.")
+                        if new_score < MIN_SCORE or new_score > MAX_SCORE:
+                            msgbox("Score must be between {MIN_SCORE} and {MAX_SCORE}.")
                         else:
                             subjects[subject] = new_score
                             msgbox(f"Score for '{subject}' has been updated successfully for {name}.")
@@ -220,9 +243,10 @@ def edit_info():
             else:
                 try:
                     score = int(score)
-                    if score < 0 or score > 100:
-                        msgbox("Score must be between 0 and 100.")
+                    if score < MIN_SCORE or score > MAX_SCORE:
+                        msgbox("Score must be between {MIN_SCORE} and {MAX_SCORE}.")
                     else:
+                       #Add the new subject and score
                         subjects[subject] = score
                         msgbox(f"Subject '{subject}' added successfully for {name}.")
                         save_students()
