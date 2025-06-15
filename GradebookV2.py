@@ -1,7 +1,11 @@
-#this program is version 2 of a student gradebook manager
+#This program is version 2 of a student gradebook manager
 from easygui import*
-#dictionary to store all the student data
+#Dictionary to store all the student data
 students = {}
+#Defining constants
+MIN_SCORE = 0
+MAX_SCORE = 100
+
 def add_student():
     #asking for user details
     while True:
@@ -54,10 +58,10 @@ def add_student():
                 score = float(score) #converting the score to float
                 if not score.is_integer():
                     msgbox("Please enter an integer (ie: a number which does not have a decimal part).")
-                elif score <0:
-                    msgbox("Please enter an integer that is more than (or equal to) 0.")
-                elif score >100:
-                    msgbox("Please enter an integer that is less than (or equal to) 100.")
+                elif score < MIN_SCORE:
+                    msgbox(f"Please enter an integer that is more than (or equal to) {MIN_SCORE}.")
+                elif score > MAX_SCORE:
+                    msgbox(f"Please enter an integer that is less than (or equal to) {MAX_SCORE}.")
                 else:
                     score = int(score)
                     break
@@ -142,15 +146,24 @@ def edit_info():
             edited_sub = choicebox("Which subject would you like to edit?", choices=subject_names)
         if edited_sub is None:
             return
-        new_score = enterbox(f"Enter the edited score for {edited_sub}: ")
-        if new_score is None:
-            return
-        #try to convert it to a number
-        try:
-            new_score = float(new_score)
-            subjects[edited_sub] = new_score #saving the updated score
-        except ValueError:
-            msgbox("Invalid score entered.")
+        while True:
+            new_score = enterbox(f"Enter the edited score for {edited_sub}: ")
+            if new_score is None:
+                return
+            #try to convert it to a number
+            try:
+                new_score = float(new_score)
+                if not new_score.is_integer():
+                    msgbox("Please enter an integer (i.e., a number with no decimal part).")
+                elif new_score < MIN_SCORE:
+                    msgbox(f"Please enter an integer that is more than or equal to {MIN_SCORE}.")
+                elif new_score > MAX_SCORE:
+                    msgbox(f"Please enter an integer that is less than or equal to {MAX_SCORE}.")
+                else:
+                    subjects[edited_sub] = int(new_score)
+                    break
+            except ValueError:
+                msgbox("Invalid score entered. Please enter a number.")       
         msgbox("Score changed successfully.")
 def main():
     while True:
