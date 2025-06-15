@@ -12,7 +12,7 @@ def visualise_student():
         return
     #Asking the user to enter full name
     while True:
-        name = enterbox("Enter the student's full name to visualize:")
+        name = enterbox("Enter the student's full name to visualise:")
         if name is None: #If user pressed cancel
             return
         name = name.strip() #Removing extra spaces
