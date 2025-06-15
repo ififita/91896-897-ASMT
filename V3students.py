@@ -13,31 +13,40 @@ def add_student():
             return
         name, student_class = entry[0].strip(), entry[1].strip()
         if name == "":
-            msgbox("Name can't be left blank.")
+            msgbox("Please type something (this can’t be left blank)")
             continue
         elif any(char.isdigit() for char in name):
-            msgbox("Name can't contain numbers.")
+            msgbox("Please try again - numbers are not allowed in this field.")
             continue
         elif name in students:
-            msgbox("That student already exists.")
+            msgbox("That student has already been entered. Please enter another student.")
             continue
         if student_class == "":
             msgbox("Tutor class can't be left blank.")
+            continue
+        elif not student_class.isalnum():
+            msgbox("Tutor class must be alphanumeric (e.g., 12B1).")
             continue
         elif "." in student_class:
             msgbox("Class can't contain decimals.")
             continue
         break
     while True:
-    #asking how many subjects the user wants to enter scores for
         subject_num = enterbox("How many subjects are you entering scores for?")
         if subject_num is None:
             return
         try:
             subject_num = int(subject_num)
-            break #exiting the loop if valid
+            if subject_num < 1:
+                msgbox("Please enter an integer that is more than (or equal to) 1.")
+                continue
+            elif subject_num > 10:
+                msgbox("Please enter an integer that is less than (or equal to) 10.")
+                continue
+            break  # valid subject number
         except ValueError:
-            msgbox("Please enter a valid whole number.")
+            msgbox("Please enter an integer (ie: a number which does not have a decimal part).")
+
 
     subjects = {} #storing the subjects in a dictionary
     for i in range(subject_num):
@@ -51,8 +60,8 @@ def add_student():
             if subject == "":
                 msgbox("Subject name can't be blank.")
                 continue
-            elif subject.isdigit():
-                msgbox("Subject names can't be numbers.")
+            elif subject.replace('.', '', 1).isdigit():
+                msgbox("Subject names can't be numbers or decimals.")
                 continue
             elif subject in subjects:
                 msgbox("You've already entered that subject. Please enter a different subject.")
@@ -73,8 +82,19 @@ def add_student():
     msgbox(f"{name} has been added successfully.")
 
 def search_student():
-    #asking for a student's name to search in the dictionary
-    name = enterbox("Enter the student's name to search: ")
+    while True:
+        #asking for a student's name to search in the dictionary
+        name = enterbox("Enter the student's name to search: ")
+        if name is None:
+            return
+        name = name.strip()
+        if name == "":
+            msgbox("Please type something (this can’t be left blank)")
+            continue
+        elif any(char.isdigit() for char in name):
+            msgbox("Student names can't contain numbers.")
+            continue
+        break
     if name in students:
         student_data = students[name]
         student_class = student_data["class"]
@@ -85,33 +105,52 @@ def search_student():
             return
         avg = calc_avg(scores)
         subject_scores = '\n'.join(f"{sub}: {score}" for sub, score in subjects.items())
-        msgbox(f"{name} (Class: {student_class})'s scores:\n{subject_scores}\nAverage: {avg:.2f}")
+        msgbox(f"{name} (Tutor Class: {student_class})'s scores:\n{subject_scores}\nAverage: {avg:.2f}")
     else:
         msgbox("Student not found.")
 #creating a function to allow user to edit information
 def edit_info():
-    name = enterbox("Enter the student’s name to edit:")
-    if name is None or name not in students:
+    while True:
+        name = enterbox("Enter the student’s name to edit:")
+        if name is None:
+            return
+        name = name.strip()
+        if name == "":
+            msgbox("Name can't be left blank.")
+            continue
+        elif any(char.isdigit() for char in name):
+            msgbox("Names can't contain numbers.")
+            continue
+        break
+    if name not in students:
         msgbox("Student not found.")
         return
+    
     option = buttonbox(f"What would you like to edit for {name}?", choices=["Edit name", "Edit subject score", "Add new subject", "Cancel"])
     if option == "Edit name":
-        edited_name = enterbox("Enter the new name:")
-        if edited_name is None:
-            return
-        edited_name = edited_name.strip() #removing extra spaces from the name
-        if edited_name == "": #check if the new name is empty
-            msgbox("This can't be blank.")
-        #making sure the name doesn't contain numbers
-        elif any(char.isdigit() for char in edited_name):
-            msgbox("Names can't have numbers.")
-        #check if the name already exists
-        elif edited_name in students:
-            msgbox("That name already exists.")
-        else:
-            #updating the dictionary key
-            students[edited_name] = students.pop(name)
-            msgbox(f"Name changed to {edited_name}.")
+        while True:
+            edited_name = enterbox("Enter the new name:")
+            if edited_name is None:
+                return
+            edited_name = edited_name.strip()
+
+            if edited_name == "":
+                msgbox("This can't be blank.")
+            elif edited_name == name:
+                msgbox("That's the same name. Please enter a different name.")
+            elif any(char.isdigit() for char in edited_name):
+                msgbox("Names can't have numbers.")
+            elif edited_name in students:
+                msgbox("That name already exists.")
+            else:
+                confirm = ynbox(f"Are you sure you want to change '{name}' to '{edited_name}'?")
+                if confirm:
+                    students[edited_name] = students.pop(name)
+                    msgbox(f"Name changed to {edited_name}.")
+                    save_students()
+                else:
+                    msgbox("Name change cancelled.")
+                break
 
     elif option == "Edit subject score":
         #getting the list of subjects for the student
@@ -132,17 +171,22 @@ def edit_info():
             return
         #try to convert it to a number
         try:
-            new_score = float(new_score)
-            if not new_score.is_integer() or new_score < 0 or new_score > 100:
-                msgbox("Score must be a whole number between 0 and 100.")
+            score = int(new_score)
+            if not (0 <= score <= 100):
+                msgbox("Score must be between 0 and 100.")
             else:
-                subjects[chosen_subject] = int(new_score)
-                msgbox("Score updated.")
+                subjects[chosen_subject] = score
+                msgbox(f"Score for '{chosen_subject}' updated to {score}.")
+                save_students()
+            # do something with score
         except ValueError:
-            msgbox("Invalid score entered.")
+            msgbox("Please enter a valid whole number.")
             
     elif option == "Add new subject":
         subjects = students[name]["subjects"]
+        if len(subjects) >= 10:
+            msgbox("Sorry, you can't add more than 10 subjects.")
+            return
         while True:
             field_names = ["Subject name:","Score (0-100):"]
             entry = multenterbox(f"Enter the new subject info for {name}:","Add Subject",field_names)
@@ -181,10 +225,11 @@ def edit_info():
                     else:
                         subjects[subject] = score
                         msgbox(f"Subject '{subject}' added successfully for {name}.")
+                        save_students()
                         break
                 except ValueError:
                     msgbox("Please enter a valid whole number.")
-        msgbox(f"{name} has been added successfully.")
+     
 
 def delete_student():
     #getting a list of all student names
@@ -221,7 +266,7 @@ def save_students():
         for name, data in students.items():
             student_class = data["class"]
             subjects = data["subjects"]
-            file.write("----------------------\n")
+            file.write("---------------------------\n")
             file.write(f"Student: {name}\n")
             file.write(f"Tutor Class: {student_class}\n")
             for subject, score in subjects.items():
@@ -249,7 +294,7 @@ def load_students():
                     students[name] = {"class": "", "subjects": {}}
                 #for other lines with ":" 
                 elif line.startswith("Tutor Class:") and name:
-                    students[name]["class"] = line.replace("Class:","").strip()
+                    students[name]["class"] = line.replace("Tutor Class:","").strip()
                 elif ":" in line and name:
                     #skip lines that show average score info
                     if line.lower().startswith("average score"):
